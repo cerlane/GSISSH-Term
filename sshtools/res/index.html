@@ -1,0 +1,36 @@
+<html>
+
+<head>
+<title>@APPLICATION_NAME@ Applet</title>
+<script type="text/javascript" src="detectjvm.js"></script>
+</head>
+
+<body onload="init();">
+
+<center><h1>@APPLICATION_NAME@ Applet</h1></center>
+
+<applet archive="./versioncheck.jar" width="0" height="0" code="JavaVersionDisplayApplet" name="jvmversion">
+<b>Please note, you will require at least
+<a target="_blank" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html/">Java Software Development Kit (known as a JDK or SDK) 1.6</a> to launch the applet!</b>
+</applet>
+
+<div id="maindiv">
+<p align="center">
+<applet width="680" height="480" archive="./SSHTerm-1.0.0.jar,./SSHVnc.jar,./SecureTunneling.jar,./ShiFT.jar,./j2ssh-common-0.2.7.jar,./j2ssh-core-0.2.7.jar,./not-yet-commons-ssl-0.3.11.jar,./commons-compress-1.2.jar,./bcprov-jdk16-146.jar,./jlirc-unix-soc.jar,./commons-logging.jar,./filedrop.jar,./log4j-1.2.6.jar,./BCGSS.jar,./ncsa-lcrypto-146.jar,./putty-pk-1.1.0.jar,./libbrowser.jar,./voms-api-java-2.0.9.jar,./swing-layout-1.0.3.jar,./TransferAPIClient.jar,./jglobus2/axisg.jar,./jglobus2/commons-io-2.4.jar,./jglobus2/commons-logging.jar,./jglobus2/io.jar,./jglobus2/myproxy-2.0.6.jar,./jglobus2/commons-codec-1.7.jar,./jglobus2/commons-lang3-3.1.jar,./jglobus2/gss.jar,./jglobus2/jsse.jar,./jglobus2/ssl-proxies.jar"
+code="com.sshtools.sshterm.SshTermApplet" 
+style="border-style: solid; border-width: 1; padding-left: 4; padding-right: 4; padding-top: 1; padding-bottom: 1">
+</applet></p>
+
+</div>
+
+<br/>
+Download <a
+href="@APPLICATION_NAME@-@APPLICATION_VERSION_MAJOR@.@APPLICATION_VERSION_MINOR@.zip">@APPLICATION_NAME@-@APPLICATION_VERSION_MAJOR@.@APPLICATION_VERSION_MINOR@.zip</a> as a standalone application.  View the <a href="changelog">changelog</a>.<br>
+<br/>
+<br/>
+<ul>
+<li>Based on <a href="http://sourceforge.net/projects/sshtools/">SSHTools</a></li>
+<li>GSISSH module originally by Jean-Claude Cote, National Research Council Canada / Conseil national de recherches Canada</li>
+</ul>
+</body>
+</html>

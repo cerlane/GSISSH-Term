@@ -1,0 +1,12 @@
+#SSHTerm session provider definition
+provider.id=sshterm
+provider.name=Terminal Session
+provider.class=com.sshtools.sshterm.SshTermSessionPanel
+provider.shortdesc=Open a terminal session
+provider.smallicon=terminalsession.png
+provider.largeicon=
+provider.mnemonic=G
+provider.options=com.sshtools.sshterm.SshTermOptionsTab
+property.page.1=com.sshtools.sshterm.SshTermTerminalTab
+property.page.2=com.sshtools.sshterm.SshTermCommandTab
+provider.weight=1

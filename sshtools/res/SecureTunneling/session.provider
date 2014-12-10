@@ -1,0 +1,10 @@
+#Secure Tunneling session provider definition
+provider.id=tunneling
+provider.name=Secure Tunneling
+provider.class=com.sshtools.tunnel.ActiveTunnelsSessionPanel
+provider.shortdesc=Establish secure TCPIP tunnels
+provider.smallicon=forward.png
+provider.largeicon=largeforward.png
+provider.mnemonic=Z
+provider.weight=4
+property.page.1=com.sshtools.tunnel.TunnelingPropertiesPanel

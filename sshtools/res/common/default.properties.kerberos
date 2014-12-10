@@ -1,0 +1,9 @@
+sshterm.auth.order=proxy,cert,browser,other
+sshterm.myproxy.defaults.hostname=myproxy-sso.grid-support.ac.uk
+sshterm.myproxy.defaults.port=7512
+sshterm.krb5myproxy.hostname=myproxy-sso.grid-support.ac.uk
+sshterm.krb5myproxy.port=7512
+sshterm.krb5myproxy.enabled=true	
+sshterm.proxy.save=false
+sshterm.simple.connection.port=2222
+

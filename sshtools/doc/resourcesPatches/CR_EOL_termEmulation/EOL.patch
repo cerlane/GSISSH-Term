@@ -1,0 +1,147 @@
+Index: src/com/sshtools/common/ui/SessionManager.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/common/ui/SessionManager.java,v
+retrieving revision 1.1.1.1
+diff -u -r1.1.1.1 SessionManager.java
+--- src/com/sshtools/common/ui/SessionManager.java	19 Dec 2006 21:41:48 -0000	1.1.1.1
++++ src/com/sshtools/common/ui/SessionManager.java	12 Nov 2009 22:05:17 -0000
+@@ -141,7 +141,7 @@
+
+
+   /**
+-   * Returns the guessed EOL setting of the remote computer
++   * Returns the EOL setting as set by the transport layer
+    * @return
+    */
+   public int getRemoteEOL();
+Index: src/com/sshtools/common/ui/SessionProviderFrame.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/common/ui/SessionProviderFrame.java,v
+retrieving revision 1.1.1.2
+diff -u -r1.1.1.2 SessionProviderFrame.java
+--- src/com/sshtools/common/ui/SessionProviderFrame.java	20 Dec 2007 18:55:38 -0000	1.1.1.2
++++ src/com/sshtools/common/ui/SessionProviderFrame.java	12 Nov 2009 22:05:17 -0000
+@@ -142,7 +142,7 @@
+   }
+
+   /**
+-   * Returns the guessed EOL setting of the remote computer
++   * Returns the EOL setting as set by the transport layer
+    * @return
+    */
+   public int getRemoteEOL() {
+Index: src/com/sshtools/common/ui/SessionProviderInternalFrame.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/common/ui/SessionProviderInternalFrame.java,v
+retrieving revision 1.1.1.1
+diff -u -r1.1.1.1 SessionProviderInternalFrame.java
+--- src/com/sshtools/common/ui/SessionProviderInternalFrame.java	19 Dec 2006 21:41:48 -0000	1.1.1.1
++++ src/com/sshtools/common/ui/SessionProviderInternalFrame.java	12 Nov 2009 22:05:17 -0000
+@@ -159,7 +159,7 @@
+   }
+
+   /**
+-   * Returns the guessed EOL setting of the remote computer
++   * Returns the EOL setting as set by the transport layer
+    * @return
+    */
+   public int getRemoteEOL() {
+Index: src/com/sshtools/j2ssh/SshClient.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/j2ssh/SshClient.java,v
+retrieving revision 1.1.1.3
+diff -u -r1.1.1.3 SshClient.java
+--- src/com/sshtools/j2ssh/SshClient.java	12 Jul 2007 16:05:08 -0000	1.1.1.3
++++ src/com/sshtools/j2ssh/SshClient.java	12 Nov 2009 22:05:17 -0000
+@@ -326,9 +326,7 @@
+
+   /**
+    * <p>
+-   * Return's a rough guess at the server's EOL setting. This is simply
+-   * derived from the identification string and should not be used as a cast
+-   * iron proof on the EOL setting.
++   * Return's an EOL setting deemed appropriate by the transport layer.
+    * </p>
+    *
+    * @return The transport protocol's EOL constant
+@@ -397,9 +395,7 @@
+
+   /**
+    * <p>
+-   * Return's a rough guess at the server's EOL setting. This is simply
+-   * derived from the identification string and should not be used as a cast
+-   * iron proof on the EOL setting.
++   * Return's an EOL setting deemed appropriate by the transport layer.
+    * </p>
+    *
+    * @return The EOL string
+Index: src/com/sshtools/sshterm/SshTermSessionPanel.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/sshterm/SshTermSessionPanel.java,v
+retrieving revision 1.1.1.2
+diff -u -r1.1.1.2 SshTermSessionPanel.java
+--- src/com/sshtools/sshterm/SshTermSessionPanel.java	5 Apr 2007 15:39:12 -0000	1.1.1.2
++++ src/com/sshtools/sshterm/SshTermSessionPanel.java	12 Nov 2009 22:05:17 -0000
+@@ -885,7 +885,7 @@
+
+     this.setContainerTitle(null);
+     //If the eol setting is EOL_DEFAULT, then use the
+-    // value guessed by j2ssh
++    // value deemed appropriate by j2ssh
+     if (eol == TerminalEmulation.EOL_DEFAULT) {
+       if (manager.getRemoteEOL() == TransportProtocolCommon.EOL_CRLF) {
+         emulation.setEOL(TerminalEmulation.EOL_CR_LF);
+Index: src/com/sshtools/sshterm/SshTerminalPanel.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/sshterm/SshTerminalPanel.java,v
+retrieving revision 1.4
+diff -u -r1.4 SshTerminalPanel.java
+--- src/com/sshtools/sshterm/SshTerminalPanel.java	7 Oct 2009 18:23:38 -0000	1.4
++++ src/com/sshtools/sshterm/SshTerminalPanel.java	12 Nov 2009 22:05:17 -0000
+@@ -1323,7 +1323,7 @@
+
+
+     //If the eol setting is EOL_DEFAULT, then use the
+-    // value guessed by j2ssh
++    // value deemed appropriate by j2ssh
+     if (eol == TerminalEmulation.EOL_DEFAULT) {
+       if (ssh.getRemoteEOL() == TransportProtocolCommon.EOL_CRLF) {
+         emulation.setEOL(TerminalEmulation.EOL_CR_LF);
+Index: TransportProtocolCommon.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/j2ssh/transport/TransportProtocolCommon.java,v
+retrieving revision 1.1
+retrieving revision 1.3
+diff -u -r1.1 -r1.3
+--- TransportProtocolCommon.java	19 Dec 2006 21:41:51 -0000	1.1
++++ TransportProtocolCommon.java	12 Nov 2009 22:10:24 -0000	1.3
+@@ -1247,6 +1311,20 @@
+       remoteVer = buffer.toString();
+
+       // Guess the remote sides EOL by looking at the end of the ident string
++      // jsiwek - removed this "guessing" functionality,
++      //   SSH Transport Layer Protocol (RFC 4253) states that the SSH version
++      //   string MUST always end with <CR><LF>, except in the case that server
++      //   wants to operate in compatibility mode for SSH protocol 1.x.  For
++      //   that situation the server SHOULD NOT send the <CR>.
++      //   Since remoteEOL is only used for setting the client's default
++      //   end-of-line character for the terminal emulator, it does not make
++      //   sense to vary based upon SSH server version string.  <LF> is an
++      //   appropriate setting for any client since <CR><LF> in the terminal
++      //   emulation will cause problems:
++      //     - Editors will insert two newlines for every 1 press of return
++      //     - Password prompts will catch the extra carriage return and
++      //         think it is part of the password, thus failing
++      /*
+       if (remoteVer.endsWith("\r")) {
+         remoteEOL = EOL_CRLF;
+       }
+@@ -1256,6 +1334,8 @@
+
+       log.debug("EOL is guessed at "
+                 + ( (remoteEOL == EOL_CRLF) ? "CR+LF" : "LF"));
++      */
++      remoteEOL = EOL_LF;
+
+       // Remove any \r
+       remoteVer = remoteVer.trim();

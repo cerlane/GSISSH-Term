@@ -1,0 +1,1 @@
+set _LIBJARS=%1;%_LIBJARS%

@@ -1,0 +1,312 @@
+<?xml version="1.0"?>
+<!--
+/*
+ *  GSI-SSHTools - Java SSH2 API
+ *
+ *  Copyright (C) 2005-7 CCLRC/STFC.
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License
+ *  as published by the Free Software Foundation; either version 2 of
+ *  the License, or (at your option) any later version.
+ *
+ *  You may also distribute it and/or modify it under the terms of the
+ *  Apache style J2SSH Software License. A copy of which should have
+ *  been provided with the distribution.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  License document supplied with your distribution for more details.
+ *
+ */
+
+-->
+
+<!-- ======================================== -->
+<!-- $Id: build.xml,v 1.60 2009/11/19 16:43:41 davidmeredith Exp $ -->
+<!-- ======================================== -->
+  
+<project name="Ant" default="sshterm">  
+        <property file="build.properties"/>
+
+	<!-- =================================== -->  
+	<!--         Properties                  -->  
+	<!-- =================================== -->  
+	<property name="application.name" value="GSI-SSHTerm_EGCF_for_PRACE_EGI_LRZ"/>
+	<property name="application.version.major" value="v2"/>
+	<property name="application.version.minor" value="1.0${version.suffix}"/>
+	<property name="build.class.dir" value="build"/>
+	<property name="release.dir" value="release"/>
+	<property name="release.application.dir" value="${release.dir}/${application.name}-${application.version.major}.${application.version.minor}"/>
+	<property name="release.application.lib.dir" value="${release.application.dir}/lib"/>
+	<property name="release.application.bin.dir" value="${release.application.dir}/bin"/>
+	<property name="release.applet.dir" value="${release.dir}/applet"/>
+	<property name="lib.jars.dir" value="lib"/>
+	<property name="jglobus.lib.jars.dir" value="${lib.jars.dir}/jglobus2"/>
+	<property name="src.java.dir" value="src"/>
+	<property name="bin.dir" value="bin"/>
+	<property name="res.dir" value="res"/>
+	<property name="doc.dir" value="doc"/>
+	<property name="tmp.dir" value="tmp"/>
+	<property name="debug" value="true"/>
+
+
+	<tstamp>
+	    <format property="build.date" pattern="dd-MMM-yyyy"/>
+	</tstamp>
+   <!-- for signing jar files -->
+   <property file="password.properties"/>
+
+
+	<!-- ============================= Targets ============================= -->  
+	  
+	<!-- ==================================== -->  
+	<!--         Make all clean               -->  
+	<!-- ==================================== -->  
+	<target name="clean" description="Makes all clean">  
+	  <delete dir="${release.dir}"/>  
+	  <delete dir="${build.class.dir}"/>  
+	  <delete dir="${tmp.dir}"/>  
+	</target>  
+	  
+	<!-- ==================================== -->  
+	<!--          Print a help line           -->  
+	<!-- ==================================== -->  
+	<target name="usage" description="Print a help line">  
+		<echo>Use 'make.sh -projecthelp' to see a sumary of targets you can execute ...</echo>  
+	</target>  
+
+	<target name="sshterm" depends="clean">  
+		<echo>Making ${application.name} program</echo>
+	   <mkdir dir="${build.class.dir}"/>  
+	   <mkdir dir="${tmp.dir}"/>  
+	   <mkdir dir="${release.application.lib.dir}"/>  
+	   <mkdir dir="${release.applet.dir}"/>  
+      <copy todir="${tmp.dir}">
+         <fileset dir="${src.java.dir}"/>
+         <filterset>
+            <filter token="APPLICATION_NAME" value="${application.name}"/>
+            <filter token="APPLICATION_VERSION_MINOR" value="${application.version.minor}"/>
+            <filter token="APPLICATION_VERSION_MAJOR" value="${application.version.major}"/>
+	    <filter token="BUILD_DATE" value="${build.date}"/>
+	    <filter token="BUILD_SITE" value="${build.site}"/>
+         </filterset>
+      </copy>
+      <javac sourcepath="" srcdir="${tmp.dir}" debug="true"
+             destdir="${build.class.dir}" target="1.1" source="1.2">
+        <include name="**/JavaVersionDisplayApplet.java"/>
+      </javac>
+
+
+        
+      <javac srcdir="${tmp.dir}" debug="true"
+                       destdir="${build.class.dir}"
+					   classpath="${lib.jars.dir}/commons-compress-1.2.jar					   
+							   :${lib.jars.dir}/not-yet-commons-ssl-0.3.11.jar
+					   		   :${lib.jars.dir}/bcprov-jdk16-146.jar
+		                       :${lib.jars.dir}/jlirc-unix-soc.jar		                       
+		                       :${lib.jars.dir}/commons-logging.jar
+		                       :${lib.jars.dir}/filedrop.jar
+		                       :${lib.jars.dir}/log4j-1.2.6.jar
+		                       :${lib.jars.dir}/BCGSS.jar
+		                       :${lib.jars.dir}/ncsa-lcrypto-146.jar
+		                       :${lib.jars.dir}/putty-pk-1.1.0.jar
+		                       :${lib.jars.dir}/libbrowser.jar
+      				       	   :${lib.jars.dir}/voms-api-java-2.0.9.jar
+      	          		       :${lib.jars.dir}/swing-layout-1.0.3.jar      	       				 
+      	       			       :${lib.jars.dir}/TransferAPIClient.jar
+      	       			       :${jglobus.lib.jars.dir}/axisg.jar      
+      	       			       :${jglobus.lib.jars.dir}/commons-io-2.4.jar      
+      	       			       :${jglobus.lib.jars.dir}/commons-logging.jar     
+      	       			       :${jglobus.lib.jars.dir}/io.jar  
+							   :${jglobus.lib.jars.dir}/myproxy-2.0.6.jar
+							   :${jglobus.lib.jars.dir}/commons-codec-1.7.jar   
+							   :${jglobus.lib.jars.dir}/commons-lang3-3.1.jar   
+							   :${jglobus.lib.jars.dir}/gss.jar                 
+							   :${jglobus.lib.jars.dir}/jsse.jar                
+							   :${jglobus.lib.jars.dir}/ssl-proxies.jar
+                       "
+                        source="1.6"
+                        target="1.6"/>
+      <copy todir="${build.class.dir}">
+         <fileset dir="${src.java.dir}">
+			 <include name="**/*.class"/>
+			 <include name="**/*.png"/>
+			 <include name="**/*.gif"/>
+         </fileset>
+      </copy>
+      <copy file="${res.dir}/common/${default.properties.file}" tofile="${tmp.dir}/default.properties"/>
+      
+     <!-- commented out by Cerlane -->
+    <!--    <zip destfile="${build.class.dir}/com/sshtools/j2ssh/authentication/certificates.zip" basedir="${res.dir}/certificates"/>--> 
+	
+	   <jar destfile="${release.application.lib.dir}/SSHTerm-1.0.0.jar" manifest="MANIFEST.MF" basedir="${build.class.dir}">
+			 <include name="com/sshtools/sshterm/**/*.class"/>
+			 <include name="com/sshtools/sshterm/**/*.png"/>
+			 <include name="com/sshtools/sshterm/**/*.gif"/>
+          <fileset dir="${res.dir}/SSHTerm"/>
+          <fileset file="${res.dir}/log4j.properties"/>
+      </jar>
+	   <jar destfile="${release.application.lib.dir}/SSHVnc.jar" basedir="${build.class.dir}">
+			 <include name="com/sshtools/sshvnc/**/*.class"/>
+			 <include name="com/sshtools/sshvnc/**/*.png"/>
+			 <include name="com/sshtools/sshvnc/**/*.gif"/>
+          <fileset dir="${res.dir}/SSHVnc"/>
+      </jar>
+	   <jar destfile="${release.application.lib.dir}/SecureTunneling.jar" basedir="${build.class.dir}">
+			 <include name="com/sshtools/tunnel/**/*.class"/>
+			 <include name="com/sshtools/tunnel/**/*.png"/>
+			 <include name="com/sshtools/tunnel/**/*.gif"/>
+          <fileset dir="${res.dir}/SecureTunneling"/>
+      </jar>
+	   <jar destfile="${release.application.lib.dir}/ShiFT.jar" basedir="${build.class.dir}">
+			 <include name="com/sshtools/shift/**/*.class"/>
+			 <include name="com/sshtools/shift/**/*.png"/>
+			 <include name="com/sshtools/shift/**/*.gif"/>
+          <fileset dir="${res.dir}/ShiFT"/>
+      </jar>
+	   <jar destfile="${release.application.lib.dir}/j2ssh-common-0.2.7.jar" basedir="${build.class.dir}">
+			 <include name="com/sshtools/common/**/*.class"/>
+			 <include name="com/sshtools/common/**/*.png"/>
+			 <include name="com/sshtools/common/**/*.gif"/>
+          <fileset file="${tmp.dir}/default.properties"/>
+          <fileset file="${doc.dir}/changelog"/>
+      </jar>
+	   <jar destfile="${release.application.lib.dir}/j2ssh-core-0.2.7.jar" basedir="${build.class.dir}">
+			 <include name="com/sshtools/j2ssh/**/*.class"/>
+			 <include name="com/sshtools/j2ssh/**/*.png"/>
+			 <include name="com/sshtools/j2ssh/**/*.gif"/>
+                         <include name="com/sshtools/j2ssh/**/*.zip"/>
+			 <include name="com/sshtools/j2ssh/**/*.0"/>
+			 <include name="com/sshtools/j2ssh/**/*.signing_policy"/>
+			 <include name="com/sshtools/j2ssh/**/*.dll"/>
+      </jar>
+      <jar destfile="${release.applet.dir}/versioncheck.jar" basedir="${build.class.dir}">
+                         <include name="JavaVersionDisplayApplet.class"/>
+      </jar>
+
+      <!-- application -->
+      <copy todir="${release.application.lib.dir}">
+         <fileset dir="${lib.jars.dir}"/>
+      </copy>
+      <copy todir="${release.application.bin.dir}">
+         <fileset dir="${bin.dir}"/>
+      </copy>
+      <copy file="${res.dir}/sshterm.properties" todir="${release.application.bin.dir}">
+         <filterset>
+            <filter token="APPLICATION_NAME" value="${application.name}"/>
+            <filter token="APPLICATION_VERSION_MINOR" value="${application.version.minor}"/>
+            <filter token="APPLICATION_VERSION_MAJOR" value="${application.version.major}"/>
+         </filterset>
+      </copy>
+      <copy file="${src.java.dir}/com/sshtools/sshterm/largessh.gif" todir="${release.application.bin.dir}"/>
+      <copy file="${doc.dir}/changelog" todir="${release.application.dir}"/>
+      <exec dir="${release.application.bin.dir}" os="Linux" executable="/bin/bash">
+         <arg line="${basedir}/${bin.dir}/mkexe.sh *.sh"/>
+      </exec>
+	</target>
+
+
+        
+	<target name="all" depends="sshterm">  
+      <!-- applet -->
+      <copy todir="${release.applet.dir}">
+         <fileset dir="${release.application.lib.dir}"/>
+      </copy>
+      <copy todir="${release.applet.dir}">
+         <fileset dir="${lib.jars.dir}"/>
+      </copy>
+      <copy todir="${release.applet.dir}">
+         <fileset dir="${res.dir}"> 
+            <include name="*.html"/>
+            <include name="*.js"/>
+         </fileset>
+         <filterset>
+            <filter token="APPLICATION_NAME" value="${application.name}"/>
+            <filter token="APPLICATION_VERSION_MINOR" value="${application.version.minor}"/>
+            <filter token="APPLICATION_VERSION_MAJOR" value="${application.version.major}"/>
+         </filterset>
+      </copy>
+      <copy file="${doc.dir}/changelog" todir="${release.applet.dir}"/>
+      <zip zipfile="${release.applet.dir}/${application.name}-${application.version.major}.${application.version.minor}.zip">
+         <zipfileset dir="${release.application.dir}" filemode="755" includes="**/*" prefix="${application.name}-${application.version.major}.${application.version.minor}"/>
+      </zip>
+      <echo/>
+      <echo>Signing applet jars using certificate in ${keystore}...</echo>
+	  <exec dir="${release.applet.dir}" os="Mac OS X" executable="/bin/bash">
+		         <arg line="${basedir}/${bin.dir}/signjars.sh ${keystore} ${keystore.alias} ${keystore.pass}"/>
+	  </exec>
+	  <exec dir="${release.applet.dir}/jglobus2" os="Mac OS X" executable="/bin/bash">
+		         <arg line="${basedir}/${bin.dir}/signjars.sh ${keystore} ${keystore.alias} ${keystore.pass}"/>
+	  </exec>
+      <exec dir="${release.applet.dir}" os="Linux" executable="/bin/bash">
+         <arg line="${basedir}/${bin.dir}/signjars.sh ${keystore} ${keystore.alias} ${keystore.pass}"/>
+      </exec>
+      <exec dir="${release.applet.dir}/jglobus2" os="Linux" executable="/bin/bash">
+         <arg line="${basedir}/${bin.dir}/signjars.sh ${keystore} ${keystore.alias} ${keystore.pass}"/>
+      </exec>
+      <exec dir="${release.applet.dir}" os="Windows XP" executable="cmd.exe">
+         <arg line="/C ${basedir}/${bin.dir}/signjars.bat ${keystore} ${keystore.alias} ${keystore.pass}"/>
+      </exec>
+      <exec dir="${release.applet.dir}/jglobus2" os="Windows XP" executable="cmd.exe">
+         <arg line="/C ${basedir}/${bin.dir}/signjars.bat ${keystore} ${keystore.alias} ${keystore.pass}"/>
+      </exec>
+      <copy todir="${release.applet.dir}" overwrite="true">        
+          <fileset dir="${jglobus.lib.jars.dir}">
+  				<include name="jce-*.jar"/>
+	 	</fileset>
+      </copy>
+      <echo>Done!</echo>
+	</target>
+
+
+
+    <!--
+      Sign all the JAR files in release dir (${release.application.dir}) in-situ.
+      Lazy signing is used, so the files will only be signed if they are not already signed.
+
+      jarsigner -keystore /home/djm76/Desktop/code-signcert/code-sign_exp18_03_2010.p12 -storepass password -storetype pkcs12 cog-jglobus.jar "code-sign.ngs.dl.ac.uk's escienceca id"
+
+    -->
+
+    <property name="env.properties.file" value="env.properties" />
+    <property file="${env.properties.file}" />
+
+    <target name="signReleaseJars" description="Sign Jars in ${release.application.dir}">
+
+        <echo message="Sign jars in: '${release.application.dir}' "/>
+        <available file="${release.application.dir}" property="has.release.dir" />
+        <fail unless="has.release.dir">Please build project via 'sshterm' target in order to sign the jar files in '${release.application.dir}'</fail>
+
+        
+        <echo message="checking for ${env.properties.file} which contain keystore signing information." />
+        <available file="${env.properties.file}" property="has.env.properties" />
+        <fail unless="has.env.properties">${env.properties.file} must exist to sign the jar files in '${release.application.dir}': Use the sample env.properties as a template</fail>
+
+        <echo message="Now signing all jars in '${release.application.dir}' "/>
+        <!-- lazy = flag to control whether the presence of a signature file
+        means a JAR is signed. This is only used when the target JAR
+        matches the source JAR-->
+        <signjar
+        alias="${alias}"
+        keystore="${keystore}"
+        storetype="${storetype}"
+        storepass="${storepass}"
+        lazy="true" >
+            <path>
+                <fileset dir="${release.application.dir}" casesensitive="yes">
+                    <include name="**/*.jar"/>
+                    <include name="**/**/*.jar"/>
+                    <exclude name="**/*jce*"/>
+                </fileset>
+            </path>
+        </signjar>
+
+        <echo message="done"/>
+    </target>
+
+
+
+
+ </project>

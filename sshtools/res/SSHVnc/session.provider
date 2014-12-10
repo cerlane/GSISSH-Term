@@ -1,0 +1,11 @@
+#SSHTerm session provider definition
+provider.id=sshvnc
+provider.name=VNC Session
+provider.class=com.sshtools.sshvnc.SshVncSessionPanel
+provider.shortdesc=Open a secured VNC session
+provider.smallicon=vncsession.png
+provider.largeicon=
+provider.mnemonic=A
+property.page.1=com.sshtools.sshvnc.VNCTab
+property.page.2=com.sshtools.sshvnc.VNCAdvancedTab
+provider.weight=2

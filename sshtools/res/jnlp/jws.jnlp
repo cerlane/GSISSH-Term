@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+      codebase="http://www.lrz.de/services/compute/grid_res/globus/gsissh-term/applet/"
+      href="jws.jnlp"
+>
+
+<information>
+  <title>GSISSH-Term</title>
+  <vendor>Leibniz Supercomputing Centre</vendor>
+  <description>Java-based GSISSH-Term
+  </description>
+  <description kind="short">GSISSH-Term</description>
+  <description kind="tooltip">GSISSH-Term</description>
+  <homepage href="http://www.lrz.de/services/compute/grid_res/globus/gsissh-term/applet/index.html" />
+  <icon href="gsisshTerm.gif" />
+  <offline-allowed />
+  <shortcut online="false">
+    <desktop />
+    <menu submenu="GSI-SSHTerm" />
+  </shortcut>
+</information>
+
+<offline-allowed />
+
+<security>
+  <all-permissions />
+</security>
+
+<resources>
+  <j2se version="1.6+" />
+
+  <jar href="SSHTerm-1.0.0.jar" />
+  <jar href="commons-compress-1.2.jar" />
+  <jar href="not-yet-commons-ssl-0.3.11.jar" />
+  <jar href="j2ssh-common-0.2.7.jar" />
+  <jar href="j2ssh-core-0.2.7.jar" />
+  <jar href="SecureTunneling.jar" />
+  <jar href="ShiFT.jar" />
+  <jar href="SSHVnc.jar" />  
+   <jar href="bcprov-jdk16-146.jar" />
+   <jar href="jlirc-unix-soc.jar" />	                       
+   <jar href="filedrop.jar" />
+   <jar href="log4j-1.2.6.jar" />
+   <jar href="BCGSS.jar" />
+   <jar href="ncsa-lcrypto-146.jar" />
+   <jar href="putty-pk-1.1.0.jar" />
+   <jar href="libbrowser.jar" />
+   <jar href="voms-api-java-2.0.9.jar" />
+   <jar href="swing-layout-1.0.3.jar" />      	       				 
+   <jar href="TransferAPIClient.jar" />
+   <jar href="jglobus2/axisg.jar" />      
+   <jar href="jglobus2/commons-io-2.4.jar" />      
+   <jar href="jglobus2/commons-logging.jar" />    
+   <jar href="jglobus2/io.jar" />  
+   <jar href="jglobus2/myproxy-2.0.6.jar" />
+   <jar href="jglobus2/commons-codec-1.7.jar" />   
+   <jar href="jglobus2/commons-lang3-3.1.jar" />   
+   <jar href="jglobus2/gss.jar" />                 
+   <jar href="jglobus2/jsse.jar" />                
+   <jar href="jglobus2/ssl-proxies.jar" />
+ <!-- <extension name="jce" href="jce.jnlp" /> -->
+</resources>
+
+<application-desc main-class="com.sshtools.sshterm.SshTerm" />
+
+<update check="always" policy="prompt-update" />
+
+</jnlp>

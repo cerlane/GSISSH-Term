@@ -1,0 +1,39 @@
+--- jlirc/src/org/lirc/socket/UnixSocketImpl.java	2001-12-12 01:08:04.000000000 -0600
++++ UnixSocketImpl.java	2009-11-12 15:03:11.000000000 -0600
+@@ -33,10 +33,33 @@
+
+ 	static {
+ 		// Loads the JNI library from the directory of this class
++                String opsys = System.getProperty("os.name");
++                String arch = System.getProperty("os.arch");
+ 		String libname = System.mapLibraryName("junixsocket");
+-		// uses getFile() instead of getPath() as getPath() is not available in JDK1.2.2
+-		String libpath = UnixSocketImpl.class.getResource(libname).getFile();
+-		System.load(libpath);
++                if (opsys.equals("Linux") && arch.equals("amd64"))
++                  libname = System.mapLibraryName("junixsocket64");
++
++                // extract the native library to a temporary directory and load it
++                try {
++                  File lib = File.createTempFile(libname, "");
++                  InputStream is = UnixSocketImpl.class.getResourceAsStream(libname);
++                  OutputStream os = new FileOutputStream(lib.getPath());
++
++                  byte[] buffer = new byte[4096];
++                  int length;
++
++                  while ((length = is.read(buffer)) > 0) {
++                    os.write(buffer, 0, length);
++                  }
++
++                  os.close();
++                  is.close();
++                  lib.deleteOnExit();
++		  System.load(lib.getPath());
++                }
++                catch (Exception e) {
++                  System.err.println("Failed to extract native socket library to temporary directory");
++                }
+ 	}
+
+ 	/**

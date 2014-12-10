@@ -1,0 +1,9 @@
+#SHiFT session provider definition
+provider.id=shift
+provider.name=SFTP Session
+provider.class=com.sshtools.shift.ShiftSessionPanel
+provider.shortdesc=Open an SFTP session
+provider.smallicon=sftpsession.png
+provider.largeicon=
+provider.mnemonic=B
+provider.weight=3

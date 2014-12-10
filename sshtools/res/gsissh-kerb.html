@@ -1,0 +1,38 @@
+<html>
+
+<head>
+<title>GSI-SSHTerm Applet (Kerberos)</title>
+</head>
+
+<body>
+
+<center><h1>GSI-SSHTerm Applet (Kerberos)</h1></center>
+
+<p><b>Please note, you will require at least <a target="_blank" href="http://mustang.dev.java.net/">JDK  1.6</a> to launch the applet!</b></br> 
+It has been tested with the following versions (all x86 architecture):</br>
+<a href="./jdk-6-beta2-bin-b79-windows-i586-06_apr_2006.exe">JDK6 for Windows</a></br>
+<a href="./jdk-6-beta2-bin-b79-linux-i586-06_apr_2006.bin">JDK6 for Linux</a></br>
+<a href="./jdk-6-beta2-bin-b79-solaris-i586-06_apr_2006.sh">JDK6 for Solaris</a></p>
+
+
+
+<p align="center">
+<applet width="680" height="480" archive="./SSHTerm-1.0.0.jar,./SSHVnc.jar,./SecureTunneling.jar,./ShiFT.jar,./j2ssh-common-0.2.7.jar,./j2ssh-core-0.2.7.jar,./not-yet-commons-ssl-0.3.11.jar,./commons-compress-1.2.jar,./bcprov-jdk16-146.jar,./jlirc-unix-soc.jar,./commons-logging.jar,./filedrop.jar,./log4j-1.2.6.jar,./BCGSS.jar,./ncsa-lcrypto-146.jar,./putty-pk-1.1.0.jar,./libbrowser.jar,./voms-api-java-2.0.9.jar,./swing-layout-1.0.3.jar,./TransferAPIClient.jar,./jglobus2/axisg.jar,./jglobus2/commons-io-2.4.jar,./jglobus2/commons-logging.jar,./jglobus2/io.jar,./jglobus2/myproxy-2.0.6.jar,./jglobus2/commons-codec-1.7.jar,./jglobus2/commons-lang3-3.1.jar,./jglobus2/gss.jar,./jglobus2/jsse.jar,./jglobus2/ssl-proxies.jar"
+code="com.sshtools.sshterm.SshTermApplet" 
+style="border-style: solid; border-width: 1; padding-left: 4; padding-right: 4; padding-top: 1; padding-bottom: 1">
+</applet></p>
+
+<br/>
+Download <a
+href="GSI-SSHTerm-0.63k.zip">GSI-SSHTerm-0.63k.zip</a> as a standalone application<br/>
+<br/>
+<h3>Note for Windows: </h3> Please disable the caching of jar's by Java otherwise this will not run as an applet.  Go to control panel and select Java.  Click "Settings..." in the "Temporary Internet Files" section, in the window that opens select "Delete Files..."->"Ok" and then unselect "Keep temporary files on my computer".  Click "Ok" on both dialog boxes and restart your browser.<br/>
+<br/>
+The root certificates for the myproxy-sso.grid-support.ac.uk kerberos CA are avaialiable <a href="http://myproxy-dev.esc.rl.ac.uk/5ac36199.zip">here</a><br/>
+<hr/>
+<ul>
+<li>Based on <a href="http://sourceforge.net/projects/sshtools/">SSHTools</a></li>
+<li>GSISSH module originally by Jean-Claude Cote, National Research Council Canada / Conseil national de recherches Canada</li>
+</ul>
+</body>
+</html>

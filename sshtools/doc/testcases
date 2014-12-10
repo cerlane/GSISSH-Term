@@ -1,0 +1,35 @@
+Windows/Linux:
+==============
+
+launch as standalone
+---------
+1) jdk1.4.2      
+2) jdk1.5
+3) jdk1.6
+
+launch as applet
+---------
+4) jdk1.4.2
+5) jdk1.5
+6) jdk1.6
+
+when running (as applet or standalone) on jdk1.5
+----------------------------
+7) connect with existing proxy
+8) connect with certificate in *.pem and provide wrong password
+9) connect with certificate in *.pem
+10) connect with certificate in *.p12 and provide wrong password
+11) connect with certificate in *.p12
+12) connect with myproxy and provide wrong host
+13) connect with myproxy and provide password < 6 characters
+14) connect with myproxy and provide wrong password
+15) connect with myproxy
+
+with any authentication mechansim:
+----------------------------
+16) connect with no delegation
+17) connect with limited delegation
+18) connect with no delegation
+
+19) reconnect after session timeout and provide wrong password
+20) reconnect after session timeout

@@ -1,0 +1,217 @@
+Compiling GSI-SSHTerminal
+-------------------------
+
+In all cases you must set your $JAVA_HOME correctly to the installation 
+directory of your Java installation.  Your Java installation must be Java 
+SDK 1.5 or greater.
+
+The GSI-SSHTerminal is compiled through the use of the "make" script, in the 
+sshtools directory run:
+
+	Linux
+		./make.sh
+	Windows
+		make.bat
+
+this will create the GSI-SSHTerminal application in 
+"release/GSI-SSHTerm-<version>" and this can be run using the following:
+
+	Linux
+		cd release/GSI-SSHTerm-<version>/bin
+		./sshterm.sh
+
+        Windows:
+                cd release/GSI-SSHTerm-<version>/bin
+                sshterm.bat
+
+To additionally compile the applet version and associated web pages use the 
+command (the webpages are highly customised for the NGS webserver and will need
+editing before the webpaes are useful):
+
+	Linux:
+		./make.sh all
+	
+	Windows XP:
+		make.bat all
+
+To compile in other Windows environments change the os="Windows XP" entry
+at about line 207 of build.xml, to the OS name returned by the os.name Java
+property on your machine.
+
+
+Signing Jar Files
+==================
+
+New way
+-------
+Use the 'signReleaseJars' ant target. This signs the compiled release .jar files
+in-situ. This target requires an 'env.properties' file in the base directory
+(use the provided 'sample.env.properties' as  an example).
+   keystore=/home/xxx/code-signcert/code-sign_exp18_03_2010.p12
+   storetype=pkcs12
+   storepass=thekeystorepassword
+   alias=theSigningCertificateKeyAlias
+
+Old way
+-------
+This requires you to setup the file password.properties in the base directory 
+of the sshtools source, it should contain the following lines:
+	keystore=/home/xxx/.keystore
+	keystore.alias=theSigningCertificateKeyAlias
+	keystore.pass=aLongPrivateKeyPassphrase
+
+keystore file
+--------------
+Note that it is suggested that the certificate and private key (in a java 
+keystore) that is pointed to by the password.properties or env.properties file is issued by a
+certification authority that the user is likely to already trust and has a 
+subject name that describes you or your organisation.  Please be careful about 
+the security of the Java keystore and the password.properties file.  This
+certificate should explicitly have "Object Signing" set in the X509v3 
+extensions. This will compile the applet version and webpages to release/applet.
+
+
+Included Certificates
+======================
+The GSI-SSHTerm automatically creates a ~/.globus/certificates directory for 
+the user, copying the UK e-Sciece CA's root certificates and signing policy 
+files.  This enables the terminal to be used without any pre-setup (except 
+Java).  If you wish to distribute a copy of the GSI-SSHTerm with a different 
+set of certificates then please change the contents of the 
+"sshtools/res/certificates/" directory.  You will then have to re-compile 
+from source and re-sign the release jar files.
+
+
+
+Configuration
+=============
+build.properties
+----------------
+
+In the build.properties file there are three configuration options:
+
+1) build.site this sets the reported build location in the About box.
+
+2) default.properties.file sets the name of the file in 
+sshtools/res/common which should be used as the default.properties
+file.  This file is explained in the next section.  
+
+3) version.suffix sets a version suffix to allow different 
+configurations to be flagged.
+
+Two examples are configurations are given, one normal and one 
+kerberos, in the distribution these correspond to the 
+default.properties and default.properties.kerberos properties
+files in sshtools/res/common.
+
+Defaults:
+---------
+At compile-time the file res/common/${default.properties} is included in in the 
+distribution and this is read first (if it exists), then the user' preferences
+file (~/.sshterm/GSI-SSHTerm.settings), which can over-ride those in the 
+res/common/default.properties file.  
+
+These files are standard Java properties files.  The following options are 
+useful (with the example of the compiled in default where no settings in
+either file exists!):
+
+Authentication Order:
+	sshterm.auth.order=cert,proxy,param,other
+Options here are:
+	param   - proxy included in <PARAM> tag on applet's webpage
+	proxy   - grid proxy stored on disk
+	cert    - usercert.pem/userkey.pem
+	other   - dialog box with MyProxy, PKCS12 and Browser options
+	browser - certificate from web browser
+	krb     - Kerberos enabled MyProxy server (must be enabled - see below)
+GSI-SSHTerm will cycle through these options, it will not try any other ones that are not in the list.
+
+Default MyProxy server:
+	sshterm.myproxy.defaults.hostname=myproxy.lrz-muenchen.de
+
+MyProxy port:
+	sshterm.myproxy.defaults.port=7512
+
+*MyProxy username:
+	sshterm.myproxy.defaults.username=<value of user.name>
+
+Enable/Disable Kerberos-enabled MyProxy support:
+	sshterm.krb5myproxy.enabled=false
+
+Kerberos-enabled MyProxy server hostname:
+	sshterm.krb5myproxy.hostname=myproxy-sso.grid-support.ac.uk
+
+Kerberos-enabled MyProxy server port (not configurable in GUI):
+	sshterm.krb5myproxy.port=7513
+
+Kerberos KDC:
+	sshterm.krb5myproxy.kdc=<value of $USERDNSDOMAIN>
+
+Kerberos Realm:
+	sshterm.krb5myproxy.realm=<value of $USERDNSDOMAIN>
+
+*Kerberos Username:
+	sshterm.krb5myproxy.username=<value of user.name>
+
+*Default PKCS12 filename:
+	sshterm.pkcs12.defaults.file=<No defualt value>
+
+*Browser Profile to choose:
+	sshterm.browser.profile=<No defualt value>
+Note that if there is only one profile it will always be chosen.
+
+*Browser DN to choose:
+	sshterm.browser.dn=<No defualt value>
+Note that if tehre is only one DN it will always be chosen.
+
+Proxy type:
+	sshterm.proxyType=prerfc
+This can take the values: rfc, prerfc and legacy
+
+Proxy Liftime:
+	sshterm.proxyLength=12
+This can take any value between 1 and 240 hours.
+
+Delegation type:
+	sssherm.delegationType=full
+This can take the values full, limited and none
+
+Proxy saving: this setting sets whether proxies created from Grid
+	credentials are saved into the defualt proxy location for future use:
+	
+	sshterm.proxy.save=false
+
+X Forwarding:
+	sshterm.xForwarding=true
+
+Default connection ports: there are two configuration options here:
+	sshterm.simple.connection.port=2222
+		Sets the port that is used in the quick connection 
+		dialog box, and the first ever port value in the
+		advanced connection dialog box.
+	apps.connection.lastPort=2222 (user's preferences)
+		This is the last port number entered by the user in the
+		advanced dialog box.  It is overwritten by the terminal
+		(application only) each time it is shut down.  It is 
+		NOT used in the simple connection dialog box.
+
+Similarly there are last username and last host (apps.connection.lastHost) in
+the user's preferences, which is filled in with the last host entered by the 
+user in both connection dialog boxes.		
+
+It is recommended that entries marked * are not included in the default.properties
+file as these will change depending on the user.
+
+Additional information:
+
+3rd Party Jars
+--------------
+All jars found in sshtools/lib are 3rd party jar/libraries. Their corresponding licenses are also found in the same folder.
+
+cog-jglobus.jar           			filedrop.jar                      log4j-1.2.6.jar
+commons-compress-1.2.jar  			gLiteVomsApi_1_8_12_1src_SCT.jar  openssh-pk-1.1.0.jar
+commons-logging.jar       			jce-jdk13-138.jar                 puretls.jar
+cryptix32.jar             			jlirc-unix-soc.jar                putty-pk-1.1.0.jar
+cryptix-asn1.jar          			jss4.jar                          swing-layout-1.0.3.jar
+cryptix.jar               			libbrowser.jar                    vomsProxyInitGUI.jar
+not-yet-commons-ssl-0.3.11.jar

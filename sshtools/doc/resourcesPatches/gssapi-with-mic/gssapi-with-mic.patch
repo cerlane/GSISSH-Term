@@ -1,0 +1,136 @@
+Index: src/com/sshtools/j2ssh/authentication/GSSAuthenticationClient.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/j2ssh/authentication/GSSAuthenticationClient.java,v
+retrieving revision 1.2
+diff -u -r1.2 GSSAuthenticationClient.java
+--- src/com/sshtools/j2ssh/authentication/GSSAuthenticationClient.java	14 Jul 2008 21:31:45 -0000	1.2
++++ src/com/sshtools/j2ssh/authentication/GSSAuthenticationClient.java	5 Nov 2009 21:18:27 -0000
+@@ -65,7 +65,7 @@
+
+     public final String getMethodName()
+     {
+-        return "gssapi";
++        return "gssapi-with-mic";
+     }
+
+     public void reset()
+@@ -89,7 +89,7 @@
+             bytearraywriter.writeUINT32(new UnsignedInteger32(1L));
+             byte abyte0[] = GSSConstants.MECH_OID.getDER();
+             bytearraywriter.writeBinaryString(abyte0);
+-            SshMsgUserAuthRequest sshmsguserauthrequest = new SshMsgUserAuthRequest(getUsername(), s, "gssapi", bytearraywriter.toByteArray());
++            SshMsgUserAuthRequest sshmsguserauthrequest = new SshMsgUserAuthRequest(getUsername(), s, "gssapi-with-mic", bytearraywriter.toByteArray());
+             authenticationprotocolclient.sendMessage(sshmsguserauthrequest);
+             log.debug("Receiving user auth response.");
+             SshMsgUserauthGssapiResponse sshmsguserauthgssapiresponse = (SshMsgUserauthGssapiResponse)authenticationprotocolclient.readMessage(60);
+@@ -115,6 +115,7 @@
+             gsscontext.requestReplayDet(true);
+             gsscontext.requestSequenceDet(true);
+             gsscontext.requestConf(false);
++            gsscontext.requestInteg(true);
+ 	    Object type = GSIConstants.DELEGATION_TYPE_FULL;
+ 	    String cur = "None";
+ 	    if(properties instanceof SshToolsConnectionProfile) {
+@@ -153,15 +154,27 @@
+                     abyte2 = bytearrayreader1.readBinaryString();
+                 }
+             } while(true);
+-            log.debug("Sending gssapi exchange complete.");
+-            SshMsgUserauthGssapiExchangeComplete sshmsguserauthgssapiexchangecomplete = new SshMsgUserauthGssapiExchangeComplete();
+-            authenticationprotocolclient.sendMessage(sshmsguserauthgssapiexchangecomplete);
++
++            ByteArrayWriter baw = new ByteArrayWriter();
++            baw.writeBinaryString(authenticationprotocolclient.getSessionIdentifier());
++            baw.write(SshMsgUserAuthRequest.SSH_MSG_USERAUTH_REQUEST);
++            baw.writeString(getUsername());
++            baw.writeString(s);
++            baw.writeString("gssapi-with-mic");
++
++            log.debug("Sending gssapi MIC.");
++            SshMsgUserauthGssapiMIC micMsg = new SshMsgUserauthGssapiMIC(
++               gsscontext.getMIC(baw.toByteArray(), 0, baw.toByteArray().length, null)
++            );
++            authenticationprotocolclient.sendMessage(micMsg);
++
+             log.debug("Context established.");
+             log.debug("Initiator : " + gsscontext.getSrcName());
+             log.debug("Acceptor  : " + gsscontext.getTargName());
+             log.debug("Lifetime  : " + gsscontext.getLifetime());
+             log.debug("Privacy   : " + gsscontext.getConfState());
+             log.debug("Anonymity : " + gsscontext.getAnonymityState());
++            log.debug("Integrity : " + gsscontext.getIntegState());
+         }
+         catch(GSSException gssexception)
+         {
+Index: src/com/sshtools/j2ssh/authentication/SshAuthenticationClientFactory.java
+===================================================================
+RCS file: /CVS/gsi-sshterm/sshtools/src/com/sshtools/j2ssh/authentication/SshAuthenticationClientFactory.java,v
+retrieving revision 1.2
+diff -u -r1.2 SshAuthenticationClientFactory.java
+--- src/com/sshtools/j2ssh/authentication/SshAuthenticationClientFactory.java	5 Nov 2009 18:07:57 -0000	1.2
++++ src/com/sshtools/j2ssh/authentication/SshAuthenticationClientFactory.java	5 Nov 2009 21:18:27 -0000
+@@ -61,7 +61,7 @@
+   public final static String AUTH_HOSTBASED = "hostbased";
+
+   /**  */
+-  public final static String AUTH_GSS = "gssapi";
++  public final static String AUTH_GSS = "gssapi-with-mic";
+   /**  */
+
+   public final static String AUTH_GSSAPIKEYEX = "gssapi-keyex";
+Index: src/com/sshtools/j2ssh/authentication/SshMsgUserauthGssapiMIC.java
+===================================================================
+RCS file: src/com/sshtools/j2ssh/authentication/SshMsgUserauthGssapiMIC.java
+diff -N src/com/sshtools/j2ssh/authentication/SshMsgUserauthGssapiMIC.java
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ src/com/sshtools/j2ssh/authentication/SshMsgUserauthGssapiMIC.java	5 Nov 2009 21:18:27 -0000
+@@ -0,0 +1,49 @@
++package com.sshtools.j2ssh.authentication;
++
++import com.sshtools.j2ssh.io.ByteArrayReader;
++import com.sshtools.j2ssh.io.ByteArrayWriter;
++import com.sshtools.j2ssh.transport.InvalidMessageException;
++import com.sshtools.j2ssh.transport.SshMessage;
++import java.io.IOException;
++
++public class SshMsgUserauthGssapiMIC extends SshMessage
++{
++    private byte[] mic;
++    public static final int SSH_MSG_USERAUTH_GSSAPI_MIC = 66;
++
++    public SshMsgUserauthGssapiMIC(byte[] mic)
++    {
++        super(SSH_MSG_USERAUTH_GSSAPI_MIC);
++        this.mic = mic;
++    }
++
++    public String getMessageName()
++    {
++        return "SSH_MSG_USERAUTH_GSSAPI_MIC";
++    }
++
++    protected void constructByteArray(ByteArrayWriter baw)
++        throws InvalidMessageException
++    {
++      try {
++        baw.writeBinaryString(mic);
++      }
++      catch (IOException ioe) {
++        throw new InvalidMessageException("Invalid message data");
++      }
++    }
++
++    protected void constructMessage(ByteArrayReader bar)
++        throws InvalidMessageException
++    {
++      try {
++        if (bar.available() > 0) {
++          mic = new byte[bar.available()];
++          bar.read(mic);
++        }
++      }
++      catch (IOException ioe) {
++        throw new InvalidMessageException("Invalid message data");
++      }
++    }
++}

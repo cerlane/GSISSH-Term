@@ -1,5 +1,7 @@
 This is a LRZ (www.lrz.de) customised version of the original GSI-SSHTerm maintained by NCS.
+
 Major  features supported in this customised version:
+-----------------------------------------------------
 
 1) Automatic installation and update of CA certificates via a PRACE (www.prace-ri.eu) managed CA service. This includes all CAs from the IGTF bundle (including EUGridPMA and TAGPMA). To check if your CA is supoorted: http://winnetou.sara.nl/deisa/certs/docs/index.html
 
@@ -48,7 +50,7 @@ or
 
 ./sshterm.bat    {Windows users}
 
-For more information abut his tool:
+For more information about his tool:
 ------------------------------------
 
 http://www.lrz.de/services/compute/grid_en/software_en/gsisshterm_en/

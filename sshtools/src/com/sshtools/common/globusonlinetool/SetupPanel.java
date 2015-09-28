@@ -114,8 +114,8 @@ public class SetupPanel {
 			//Check if a proxy already exists and if the the proxy is valid.
 			String existingProxyCertStr = "";
 			boolean proxyValid = false;
-			if (CredentialHelper.getExistingProxyLoation()!=null){
-				existingProxyCertStr = CredentialHelper.getExistingProxyLoation();
+			if (CredentialHelper.getExistingProxyLocation()!=null){
+				existingProxyCertStr = CredentialHelper.getExistingProxyLocation();
 				if (existingProxyCertStr!=null && !existingProxyCertStr.equals("")){
 					proxyValid = true;
 				}
@@ -214,8 +214,8 @@ public class SetupPanel {
 			gbc.weightx = 1.0;
 	
 			existingProxyCertStr = "";
-			if (CredentialHelper.getExistingProxyLoation()!=null){
-				existingProxyCertStr = CredentialHelper.getExistingProxyLoation();
+			if (CredentialHelper.getExistingProxyLocation()!=null){
+				existingProxyCertStr = CredentialHelper.getExistingProxyLocation();
 			}
 			existingProxyCert = new XTextField(existingProxyCertStr, 25);
 	
@@ -429,8 +429,8 @@ public class SetupPanel {
 	
 				//lifetime.setEnabled(false);
 				if (existingProxyCert.getText().trim().equals("")){
-					if (CredentialHelper.getExistingProxyLoation()!=null){
-						existingProxyCert.setText(CredentialHelper.getExistingProxyLoation());
+					if (CredentialHelper.getExistingProxyLocation()!=null){
+						existingProxyCert.setText(CredentialHelper.getExistingProxyLocation());
 					}
 				}
 			}

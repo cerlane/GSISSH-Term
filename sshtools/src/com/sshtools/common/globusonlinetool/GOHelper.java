@@ -88,7 +88,7 @@ public class GOHelper {
 	public static boolean init(){
 
 		try {			
-			client = new JSONTransferAPIClient(goUserName,null, CredentialHelper.getExistingProxyLoation(), CredentialHelper.getExistingProxyLoation(), null);
+			client = new JSONTransferAPIClient(goUserName,null, CredentialHelper.getExistingProxyLocation(), CredentialHelper.getExistingProxyLocation(), null);
 			return true;
 		} catch (KeyManagementException e) {
 			JOptionPane.showMessageDialog(null,"Cannot connect to GO with your credential.\nPlease check that you have add your X.509 certificate to your GO account and your account is correct.\nMore information:\nhttps://support.globusonline.org/entries/20999758-How-do-I-add-an-X-509-certificate-to-my-Globus-Online-account-","Globus Online Tool-  Error", JOptionPane.ERROR_MESSAGE); 

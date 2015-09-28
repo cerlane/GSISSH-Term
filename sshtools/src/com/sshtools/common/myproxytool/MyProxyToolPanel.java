@@ -34,6 +34,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -43,6 +44,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -73,6 +75,7 @@ public class MyProxyToolPanel
 
   //  Private instance variables
   private JPanel localCertificatePanel;
+ // private JPanel downloadProxyPanel;
   private JButton browsePKCS12Cert;
   private JButton browseExistingProxyCert;
   private JComboBox certType;
@@ -90,6 +93,7 @@ public class MyProxyToolPanel
   private JLabel localPassphraseLabel;
   private JLabel typeLabel;
   private JLabel vomsLabel;
+  private JLabel vomsLabel2;
   private JPasswordField passphrase;
   private JPasswordField confirmPassphrase;
   private JProgressBar strength;
@@ -98,7 +102,8 @@ public class MyProxyToolPanel
   private XTextField pkcs12cert;
   private XTextField existingProxyCert;
   private JPasswordField localPassphrase;
-  private JCheckBox vomsSupport;
+  private JRadioButton vomsSupport;
+  private JRadioButton vomsSupport2;
   private NumericTextField port;
   private NumericTextField lifetime;
   
@@ -209,8 +214,14 @@ public class MyProxyToolPanel
     usernameLabel.setLabelFor(username);    
     UIUtil.jGridBagAdd(myproxyPanel, username, gbc, GridBagConstraints.RELATIVE);
     UIUtil.jGridBagAdd(myproxyPanel, new JLabel(), gbc, GridBagConstraints.REMAINDER);
-      
+     
+    /*
+     * Download  proxy Panel
+     */
+    /*downloadProxyPanel = new JPanel (new GridBagLayout());
+    downloadProxyPanel.setBorder(BorderFactory.createTitledBorder("Download Proxy"));*/
     
+   
     /*
      * Local Certificate
      */
@@ -300,16 +311,29 @@ public class MyProxyToolPanel
     UIUtil.jGridBagAdd(localCertificatePanel, new JLabel(), gbc,
                        GridBagConstraints.REMAINDER);
     
-    //Generate VOMS Proxy
+    //Generate VOMS Proxy locally
     gbc.insets = indentedInsets;
-    vomsSupport = new JCheckBox("  VOMS Enabled Proxy");
+    vomsSupport = new JRadioButton("  VOMS Enabled Proxy (locally)");
     UIUtil.jGridBagAdd(localCertificatePanel, vomsSupport, gbc, 1);
     gbc.insets = normalInsets;
     gbc.weightx = 3.0;
-    vomsLabel = new JLabel(" (Generates voms-enabled proxy and upload it)");
+    vomsLabel = new JLabel(" (Generates VOMS extension locally)");
     vomsLabel.setFont(new Font("Serif", Font.ITALIC, 14));
     UIUtil.jGridBagAdd(localCertificatePanel, vomsLabel, gbc, GridBagConstraints.REMAINDER);
     
+    //Generate VOMS Proxy via MyProxy Server
+    gbc.insets = indentedInsets;
+    vomsSupport2 = new JRadioButton("  VOMS Enabled Proxy (remotely)");
+    UIUtil.jGridBagAdd(localCertificatePanel, vomsSupport2, gbc, 1);
+    gbc.insets = normalInsets;
+    gbc.weightx = 3.0;
+    vomsLabel2 = new JLabel(" (Gets VOMS extensions via MyProxy server)");
+    vomsLabel2.setFont(new Font("Serif", Font.ITALIC, 14));
+    UIUtil.jGridBagAdd(localCertificatePanel, vomsLabel2, gbc, GridBagConstraints.REMAINDER);
+    
+    ButtonGroup vomsGroup = new ButtonGroup();
+    vomsGroup.add(vomsSupport);
+    vomsGroup.add(vomsSupport2);
 
     //Disable pkcs12 related ui
     triggerCertificateFormat("PEM");
@@ -471,6 +495,15 @@ public class MyProxyToolPanel
   */
   public boolean getVOMSSupport() {
     return vomsSupport.isSelected();
+  }
+  
+  /**
+  *
+  *
+  * @return
+  */
+  public boolean getVOMSRemoteSupport() {
+    return vomsSupport2.isSelected();
   }
 
   /**

@@ -21,9 +21,15 @@
 
 package com.sshtools.common.myproxytool;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -34,9 +40,12 @@ import java.util.Enumeration;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.globus.gsi.CredentialException;
 import org.globus.gsi.GSIConstants;
+import org.globus.gsi.OpenSSLKey;
 import org.globus.gsi.X509Credential;
 import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
+import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import org.globus.gsi.util.CertificateLoadUtil;
 import org.globus.util.ConfigUtil;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -46,30 +55,35 @@ import org.ietf.jgss.GSSException;
 public class CredentialHelper {
 	
 	public static GSSCredential loadExistingProxy() throws Exception {
-		 GSSCredential cred = null;
-        X509Credential proxy = null;
-        String proxyLoc = ConfigUtil.discoverProxyLocation();
+		GSSCredential cred = null;
+		X509Credential proxy = null;
+		String proxyLoc = ConfigUtil.discoverProxyLocation();
 
-        try {
-                if (!(new File(proxyLoc)).exists()) {
-                        return null;
-                }
+		try {
+			if (!(new File(proxyLoc)).exists()) {
+				return null;
+			}
 
-                proxy = new X509Credential(proxyLoc);
-                cred = new GlobusGSSCredentialImpl(proxy,GSSCredential.INITIATE_ONLY);
-                proxy.verify();
+			proxy = new X509Credential(proxyLoc);
+			if(proxy.getProxyType().equals(GSIConstants.CertificateType.EEC)){
+				cred = createCredentialFromEndEntityProxy(proxyLoc, (int) Math.ceil(proxy.getTimeLeft()/3600));
+			}
+			else{
+				cred = new GlobusGSSCredentialImpl(proxy,GSSCredential.INITIATE_ONLY);
+			}
+			proxy.verify();
 
-        } catch (CredentialException ce) {
-                throw new Exception ("Credential from proxy file '"+proxyLoc+"' is not a valid X509 credential.", ce);
-        } catch (GSSException gsse) {
-                if (proxy.getTimeLeft()<=0){
-                        File file = new File(proxyLoc);
-                        file.delete();
-                        cred = null;
-                }
-                throw new Exception("Credential from proxy file '"+proxyLoc+"' cannot be verified", gsse);
-        }      
-        return cred;
+		} catch (CredentialException ce) {
+			throw new Exception ("Credential from proxy file '"+proxyLoc+"' is not a valid X509 credential.", ce);
+		} catch (GSSException gsse) {
+			if (proxy.getTimeLeft()<=0){
+				File file = new File(proxyLoc);
+				file.delete();
+				cred = null;
+			}
+			throw new Exception("Credential from proxy file '"+proxyLoc+"' cannot be verified", gsse);
+		}      
+		return cred;
 	}
 	public static String getExistingProxyLocation() {		
 		try{
@@ -93,6 +107,9 @@ public class CredentialHelper {
 				throw new Exception("Proxy file '"+path+"' does not exist.");				
 			}
 			proxy = new X509Credential(path);
+			if(proxy.getProxyType().equals(GSIConstants.CertificateType.EEC)){
+				proxy = createX509CredentialFromEndEntityProxy(path, (int) Math.ceil(proxy.getTimeLeft()/3600));
+			}
             proxy.verify();            
             
 
@@ -172,6 +189,105 @@ public class CredentialHelper {
 		}
 
 		return proxy;
+	}
+	private static GSSCredential createCredentialFromEndEntityProxy (String filename, int lifetimeHours) throws Exception {
+		GSSCredential cred = null;
+		X509Credential proxy = null;
+
+        try {
+        	proxy = createX509CredentialFromEndEntityProxy(filename, lifetimeHours);
+
+        	cred = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
+        	System.out.println("Credential successfully created.");
+
+        } catch (Exception e) {
+        	throw new Exception("Failed to create a proxy:" +  e.getMessage());
+        }
+
+        return cred;
+	}
+
+	private static X509Credential createX509CredentialFromEndEntityProxy (String filename, int lifetimeHours) throws Exception {
+		X509Credential proxy = null;
+		X509Certificate [] userCerts = null;
+        PrivateKey userKey = null;
+      
+        String keyContent="";
+        String certContent="";
+        boolean isCertContent = false;
+        boolean isKeyContent = false;
+        
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String line;
+        while ((line = br.readLine()) != null) {
+        	if(line.startsWith("-----") && line.contains("BEGIN") && line.contains("CERTIFICATE")){
+        		certContent+=line+"\n";
+        		isCertContent = true;
+        		continue;
+        	}
+        	else if(line.startsWith("-----") && line.contains("END") && line.contains("CERTIFICATE")){
+        		certContent+=line+"\n";
+        		isCertContent = false;
+        	}
+        	else if(line.startsWith("-----") && line.contains("BEGIN") && line.contains("PRIVATE") && line.contains("KEY")){
+        		keyContent+=line+"\n";
+        		isKeyContent = true;
+        		continue;
+        	}
+        	else if(line.startsWith("-----") && line.contains("END") && line.contains("PRIVATE") && line.contains("KEY")){
+        		keyContent+=line+"\n";
+        		isKeyContent = false;
+        	}
+        	if(isCertContent){
+        		certContent+=line+"\n";
+        	}
+        	if(isKeyContent){
+        		keyContent+=line+"\n";
+        	}
+        }
+        br.close();
+       
+        try {
+        	InputStream inKey = new ByteArrayInputStream(keyContent.getBytes());	
+            OpenSSLKey key = new BouncyCastleOpenSSLKey(inKey);
+            userKey = key.getPrivateKey();
+        } catch(IOException e) {
+            throw new Exception("Error: Failed to load key", e);            
+        } 
+        
+        try {
+        	InputStream inCert = new ByteArrayInputStream(certContent.getBytes());
+        	X509Certificate cert = CertificateLoadUtil.readCertificate(new BufferedReader(new StringReader(certContent)));        	
+            userCerts = new X509Certificate[] {(X509Certificate)cert};            
+        } catch(IOException e) {
+        	throw new Exception("Error: Failed to load cert", e);
+        } catch(GeneralSecurityException e) {
+        	throw new Exception("Error: Unable to load user certificate", e);
+        }
+
+        BouncyCastleCertProcessingFactory factory = BouncyCastleCertProcessingFactory.getDefault();
+
+        int bits = org.globus.myproxy.MyProxy.DEFAULT_KEYBITS;
+
+
+        /* GSIConstants.DelegationType proxyType =  (limited) ? 
+	            GSIConstants.DelegationType.LIMITED :
+	            GSIConstants.DelegationType.FULL;*/
+
+        try {
+        	proxy = factory.createCredential(userCerts,
+        			userKey,
+        			bits,
+        			lifetimeHours*3600,
+        			GSIConstants.DelegationType.FULL);
+
+        	
+
+        } catch (Exception e) {
+        	throw new Exception("Failed to create a proxy:" +  e.getMessage());
+        }
+
+        return proxy;
 	}
 
 }

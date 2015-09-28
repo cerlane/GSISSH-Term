@@ -1,7 +1,24 @@
 Change log
 ==========
 
-EGCF version 2.0, Siew Hoon, Cerlane, Leong (LRZ)
+Note: Browser authentication currently works only with Mac OS-X Keychain Access.
+
+LRZ version 2.2.0 , Siew Hoon, Cerlane, Leong (LRZ)
+- 22/08/2014 Add support to End Entity Certificate required for LRZ SLCS
+- 25/03/2014 Add a feature to convert PEM certificates into PKCS12 format in Tools->Keygen
+- 28/09/2015 Add AES128-CTR cipher support
+- 28/09/2015 Change URL of advanced link to LRZ's documentation.
+
+EGCF version 2.1.0, Siew Hoon, Cerlane, Leong (LRZ)
+- 28/02/2014 Ported to JGlobus 2.0.6. Modified JGlobus source to fix Windows bug. A ticket has also been submitted to JGlobus2 team. https://github.com/jglobus/JGlobus/issues/124
+- 28/02/2014 Patch code to overcome bug in BCGSS where File separator for Windows is incorrect. 
+- 28/02/2014 Patch voms-api-java-2.0.9 to fix windows voms generation problem. Proxy location is hard coded in source for Mac and Linux and thus does not work for Windows.
+- 03/03/2014 Fix bug where an expired proxy will lead to failure to generate new proxy
+- 19/03/2014 Add a patch for PRACE's CINECA GSISSH doornode where the respond was taking longer than the timeout. A wait loop is added.
+- 19/03/2014 Add a feature to get a VOMS extension from myProxy server and put this updated proxy back into myProxy server with a single click. This is to help users with firewall issues and cannot connect to voms server ports >10000 
+
+
+EGCF version 2.0.0, Siew Hoon, Cerlane, Leong (LRZ)
 - 31/10/2013 Ported to JGlobus 2.0.5, MyProxy 2.0.6 and Glite VOMS API 2.0.9 (EGCF version). 
 		     Uses BCGSS.jar and ncsa-lcrypto-146.jar from NCSA (from GSI-SSHTerm 0.91i rc).
 - 07/11/2013 Added support for VOMS enabled proxy download from any myproxy server that can support this feature.

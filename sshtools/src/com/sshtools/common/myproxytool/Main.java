@@ -21,6 +21,7 @@
 
 package com.sshtools.common.myproxytool;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import java.awt.BorderLayout;
@@ -44,6 +45,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -54,9 +56,11 @@ import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.auth.IdentityAuthorization;
 import org.globus.myproxy.CredentialInfo;
 import org.globus.myproxy.DestroyParams;
+import org.globus.myproxy.GetParams;
 import org.globus.myproxy.InfoParams;
 import org.globus.myproxy.InitParams;
 import org.globus.myproxy.MyProxy;
+import org.globus.myproxy.MyProxyException;
 import org.globus.util.Util;
 import org.ietf.jgss.GSSCredential;
 
@@ -91,7 +95,10 @@ implements ActionListener {
 
 	/**  */
 	final static int PROXY_INFORMATION = 2;
-
+	
+	/**  */
+	//final static int DOWNLOAD_PROXY = 3;
+	
 	String userName = "";
 	String hostName = "";
 	int port = 0;
@@ -161,7 +168,7 @@ implements ActionListener {
 		gbc.insets = new Insets(0, 2, 4, 2);
 		gbc.weightx = 0.0;
 		action = new JComboBox(new String[] {
-				"Create and upload proxy", "Remove or destroy proxy", "Retrieve proxy information"                          
+				"Create and upload proxy", "Remove or destroy proxy", "Retrieve proxy information"/*, "Download proxy"   */                       
 		});
 		action.addActionListener(this);
 		UIUtil.jGridBagAdd(selectActionPanel, action, gbc, GridBagConstraints.RELATIVE);
@@ -270,22 +277,32 @@ implements ActionListener {
 					gsscredential = createCredential(localPassphrase, proxyType, lifetime , pkcs12cert, existingProxyCert);
 					if (gsscredential!=null){					        
 						boolean ok = createConfirmPassphraseDialog();
-
-						if (ok){
-							MyProxy myProxy = getMyProxy();
+						MyProxy myProxy = getMyProxy();
+						if (ok){							
 							myProxy.put(gsscredential, userName, passphrase, lifetime*3600);
-							
-							/*InitParams initRequest = new InitParams();
-							initRequest.setUserName(userName);
-							initRequest.setLifetime(lifetime*3600);
-							initRequest.setCredentialName(null);
-							initRequest.setCredentialDescription(null);
-							initRequest.setRenewer(null);
-							initRequest.setRetriever(null);
-							initRequest.setPassphrase(passphrase);	 
-
-							org.globus.myproxy.MyProxy myProxy = getMyProxy();
-							myProxy.put(gsscredential, initRequest);*/
+													
+							//This is to support getting VOMS extension from myproxy server and then reloading
+							if (myproxypanel.getVOMSRemoteSupport()){
+								String voName = createSimpleVOMSDialog();
+								if (voName!=null){
+									try {
+										GetParams getRequest = new GetParams();
+										getRequest.setUserName(userName);
+										getRequest.setLifetime(lifetime*3600);
+										getRequest.setPassphrase(passphrase);
+										ArrayList <String>vonameList = new ArrayList<String>();
+										vonameList.add(voName);
+										getRequest.setVoname(vonameList);
+									
+										GSSCredential vomGsscredential = myProxy.get(null, getRequest);	 
+										//System.out.println("[MyProxy Tool] Successfully download a voms enabled proxy");
+										myProxy.put(vomGsscredential, userName, passphrase, lifetime*3600);
+										
+									} catch (MyProxyException e) {
+										e.printStackTrace();
+									}
+								}
+							}
 							JOptionPane.showMessageDialog(this, "Proxy is successfully created and stored.",
 									"MyProxy status", JOptionPane.INFORMATION_MESSAGE, new ResourceIcon(this.getClass(), ICON));
 						}
@@ -405,7 +422,11 @@ implements ActionListener {
 					}
 				}
 
-			}
+			} /*else if (getAction() == DOWNLOAD_PROXY){
+				generate.setText("Download");
+				myproxypanel.triggerLocalCertificatePanel(false);
+				
+			}*/
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(),
 					"MyProxy Error", JOptionPane.ERROR_MESSAGE); 
@@ -558,7 +579,24 @@ implements ActionListener {
 		return false;
 	}
 
-
+	private String createSimpleVOMSDialog(){
+		int counter = 0;
+		while(counter<3){
+			JLabel lvoms = new JLabel("VO:");
+			JTextField tbVOName = new JTextField();
+			Object[] obj = {lvoms, tbVOName};
+			int result = JOptionPane.showConfirmDialog(this, obj, "Please enter VO name", JOptionPane.OK_CANCEL_OPTION);
+			
+			if (result == JOptionPane.OK_OPTION) {
+				String voName = tbVOName.getText().trim();
+				if (voName!=null && !voName.equals("")){
+					return voName;
+				}
+			}
+			counter ++;
+		}
+		return null;
+	}
 
 	private org.globus.myproxy.MyProxy getMyProxy() {
 		org.globus.myproxy.MyProxy myProxy = new org.globus.myproxy.MyProxy(this.hostName, 

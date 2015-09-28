@@ -1223,7 +1223,13 @@ public class UserGridCredential {
     		}
 
     		proxy = new X509Credential(proxyLoc);
-    		cred = new GlobusGSSCredentialImpl(proxy,GSSCredential.INITIATE_ONLY);
+    		proxy = new X509Credential(proxyLoc);
+			if(proxy.getProxyType().equals(GSIConstants.CertificateType.EEC)){
+				cred = createCredentialFromEndEntityProxy(proxyLoc, (int) Math.ceil(proxy.getTimeLeft()/3600));
+			}
+			else{
+				cred = new GlobusGSSCredentialImpl(proxy,GSSCredential.INITIATE_ONLY);
+			}
     		proxy.verify();   		
 
     	} catch (CredentialException ce) {
@@ -1313,6 +1319,46 @@ public class UserGridCredential {
 	    in.close();
 	    out.close();
 	}
+    
+    public static void convertPEMTOPKCS12(String passphrase, String usercredP12Loc)
+    throws Exception {
+
+
+        CoGProperties props = CoGProperties.getDefault();
+
+        X509Certificate userCert =  CertificateLoadUtil.loadCertificate(props.getUserCertFile());
+
+        /** CERLANE: To support Openssl 1.0.0 encrypted pem keys **/
+        FileInputStream in = new FileInputStream(props.getUserKeyFile());
+        byte[] bytes = Util.streamToBytes(in);
+        PKCS8Key key = new PKCS8Key(bytes, passphrase.toCharArray());
+        byte[] decrypted = key.getDecryptedBytes();
+
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec( decrypted );
+
+        PrivateKey userKey = null;
+        if ( key.isDSA() ){
+                userKey = KeyFactory.getInstance( "DSA" ).generatePrivate( spec );
+        }
+        else if ( key.isRSA() ){
+                userKey = KeyFactory.getInstance( "RSA" ).generatePrivate( spec );
+        }
+        /** CERLANE: End of Openssl support **/
+        
+        // Put them into a PKCS12 keystore and write it to a byte[]
+        
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, passphrase.toCharArray());
+        
+        KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(passphrase.toCharArray());
+        Certificate[] certChain = new Certificate[]{ userCert };
+        KeyStore.PrivateKeyEntry pkEntry = new KeyStore.PrivateKeyEntry(userKey, certChain);
+        ks.setEntry("keypair", pkEntry, protParam);
+        FileOutputStream fos = new FileOutputStream(usercredP12Loc);
+        ks.store(fos, passphrase.toCharArray());
+        fos.close();
+        Chmod(false, "600", usercredP12Loc);
+    }
     
     public static X509Credential createProxy(String passphrase, GSIConstants.CertificateType proxyType, int lifetimeHours)
     throws Exception {
@@ -1526,6 +1572,105 @@ public class UserGridCredential {
     	return cred;
 
     }
+	private static GSSCredential createCredentialFromEndEntityProxy (String filename, int lifetimeHours) throws Exception {
+		GSSCredential cred = null;
+		X509Credential proxy = null;
+
+        try {
+        	proxy = createX509CredentialFromEndEntityProxy(filename, lifetimeHours);
+
+        	cred = new GlobusGSSCredentialImpl(proxy, GSSCredential.INITIATE_ONLY);
+        	System.out.println("Credential successfully created.");
+
+        } catch (Exception e) {
+        	throw new Exception("Failed to create a proxy:" +  e.getMessage());
+        }
+
+        return cred;
+	}
+
+	private static X509Credential createX509CredentialFromEndEntityProxy (String filename, int lifetimeHours) throws Exception {
+		X509Credential proxy = null;
+		X509Certificate [] userCerts = null;
+        PrivateKey userKey = null;
+      
+        String keyContent="";
+        String certContent="";
+        boolean isCertContent = false;
+        boolean isKeyContent = false;
+        
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String line;
+        while ((line = br.readLine()) != null) {
+        	if(line.startsWith("-----") && line.contains("BEGIN") && line.contains("CERTIFICATE")){
+        		certContent+=line+"\n";
+        		isCertContent = true;
+        		continue;
+        	}
+        	else if(line.startsWith("-----") && line.contains("END") && line.contains("CERTIFICATE")){
+        		certContent+=line+"\n";
+        		isCertContent = false;
+        	}
+        	else if(line.startsWith("-----") && line.contains("BEGIN") && line.contains("PRIVATE") && line.contains("KEY")){
+        		keyContent+=line+"\n";
+        		isKeyContent = true;
+        		continue;
+        	}
+        	else if(line.startsWith("-----") && line.contains("END") && line.contains("PRIVATE") && line.contains("KEY")){
+        		keyContent+=line+"\n";
+        		isKeyContent = false;
+        	}
+        	if(isCertContent){
+        		certContent+=line+"\n";
+        	}
+        	if(isKeyContent){
+        		keyContent+=line+"\n";
+        	}
+        }
+        br.close();
+       
+        try {
+        	InputStream inKey = new ByteArrayInputStream(keyContent.getBytes());	
+            OpenSSLKey key = new BouncyCastleOpenSSLKey(inKey);
+            userKey = key.getPrivateKey();
+        } catch(IOException e) {
+            throw new Exception("Error: Failed to load key", e);            
+        } 
+        
+        try {
+        	InputStream inCert = new ByteArrayInputStream(certContent.getBytes());
+        	X509Certificate cert = CertificateLoadUtil.readCertificate(new BufferedReader(new StringReader(certContent)));        	
+            userCerts = new X509Certificate[] {(X509Certificate)cert};            
+        } catch(IOException e) {
+        	throw new Exception("Error: Failed to load cert", e);
+        } catch(GeneralSecurityException e) {
+        	throw new Exception("Error: Unable to load user certificate", e);
+        }
+
+        BouncyCastleCertProcessingFactory factory = BouncyCastleCertProcessingFactory.getDefault();
+
+        int bits = org.globus.myproxy.MyProxy.DEFAULT_KEYBITS;
+
+
+        /* GSIConstants.DelegationType proxyType =  (limited) ? 
+	            GSIConstants.DelegationType.LIMITED :
+	            GSIConstants.DelegationType.FULL;*/
+
+        try {
+        	proxy = factory.createCredential(userCerts,
+        			userKey,
+        			bits,
+        			lifetimeHours*3600,
+        			GSIConstants.DelegationType.FULL);
+
+        	
+
+        } catch (Exception e) {
+        	throw new Exception("Failed to create a proxy:" +  e.getMessage());
+        }
+
+        return proxy;
+	}
   /* public static GSSCredential createCredentialFromPKCS12(SshConnectionProperties properties, int proxyType, int lifetimeHours, StringBuffer stringbufferCredentialFile, StringBuffer stringbufferPassphrase){
 	   GSSCredential gsscredential = null;
 	   CoGProperties cogproperties = CoGProperties.getDefault();
@@ -1698,4 +1843,5 @@ public class UserGridCredential {
             return Arrays.copyOf(password, password.length);
         }
     } 
+  
 }

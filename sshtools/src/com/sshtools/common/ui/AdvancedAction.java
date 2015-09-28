@@ -84,7 +84,7 @@ public class AdvancedAction
        * implementation (Nov, 09), works on all platforms.
        * URL should not be hard-wired.
        */
-      BareBonesBrowserLaunch.openURL("http://wiki.ngs.ac.uk/index.php?title=GSI-SSHTerm");
+      BareBonesBrowserLaunch.openURL("http://www.lrz.de/services/compute/grid_en/software_en/gsisshterm_en/");
 
       /* Original src
        try {

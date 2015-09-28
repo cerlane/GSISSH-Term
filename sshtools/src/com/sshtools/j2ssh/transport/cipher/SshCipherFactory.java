@@ -59,7 +59,8 @@ public class SshCipherFactory {
 
     ciphers.put("3des-cbc", TripleDesCbc.class);
     ciphers.put("blowfish-cbc", BlowfishCbc.class);
-    defaultCipher = "blowfish-cbc";
+    ciphers.put("aes128-ctr", Aes128Ctr.class);
+    defaultCipher = "aes128-ctr";//"blowfish-cbc";
 
     try {
 

@@ -315,6 +315,18 @@ extends SshKeyExchange {
 				if(gsscontext.isEstablished())
 					break;
 				byte abyte3[] = gsscontext.initSecContext(abyte2, 0, abyte2.length);
+				//cerlane's patch for cinecas slow response
+				int count = 0;
+				while(abyte3==null && count<2){
+					try {
+					    Thread.sleep(3000);
+					    abyte3 = gsscontext.initSecContext(abyte2, 0, abyte2.length);
+					    count ++;
+					} catch(InterruptedException ex) {
+					    Thread.currentThread().interrupt();
+					}
+				}
+				//end Cerlane patch
 				if(gsscontext.isEstablished() && !gsscontext.getMutualAuthState()) {
 					// bad authenitcation 
 					throw new KeyExchangeException("Context established without mutual authentication in gss-group1-sha1-* key exchange.");

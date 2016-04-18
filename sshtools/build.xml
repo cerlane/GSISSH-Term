@@ -33,9 +33,9 @@
 	<!-- =================================== -->  
 	<!--         Properties                  -->  
 	<!-- =================================== -->  
-	<property name="application.name" value="GSI-SSHTerm_EGCF_for_PRACE_EGI_LRZ"/>
+	<property name="application.name" value="GSI-SSHTerm_for_PRACE_EGI_LRZ"/>
 	<property name="application.version.major" value="v2"/>
-	<property name="application.version.minor" value="1.0${version.suffix}"/>
+	<property name="application.version.minor" value="2.1${version.suffix}"/>
 	<property name="build.class.dir" value="build"/>
 	<property name="release.dir" value="release"/>
 	<property name="release.application.dir" value="${release.dir}/${application.name}-${application.version.major}.${application.version.minor}"/>
@@ -83,6 +83,8 @@
 	   <mkdir dir="${tmp.dir}"/>  
 	   <mkdir dir="${release.application.lib.dir}"/>  
 	   <mkdir dir="${release.applet.dir}"/>  
+	   <mkdir dir="${release.applet.dir}/JNLP-INF"/> 
+	   <mkdir dir="${tmp.dir}/JNLP-INF"/> 
       <copy todir="${tmp.dir}">
          <fileset dir="${src.java.dir}"/>
          <filterset>
@@ -92,6 +94,9 @@
 	    <filter token="BUILD_DATE" value="${build.date}"/>
 	    <filter token="BUILD_SITE" value="${build.site}"/>
          </filterset>
+      </copy>
+      <copy todir="${tmp.dir}/JNLP-INF">
+      	<fileset dir="${res.dir}/jnlp"/>
       </copy>
       <javac sourcepath="" srcdir="${tmp.dir}" debug="true"
              destdir="${build.class.dir}" target="1.1" source="1.2">
@@ -127,8 +132,8 @@
 							   :${jglobus.lib.jars.dir}/jsse.jar                
 							   :${jglobus.lib.jars.dir}/ssl-proxies.jar
                        "
-                        source="1.6"
-                        target="1.6"/>
+                        source="1.7"
+                        target="1.7"/>
       <copy todir="${build.class.dir}">
          <fileset dir="${src.java.dir}">
 			 <include name="**/*.class"/>
@@ -214,6 +219,9 @@
       <copy todir="${release.applet.dir}">
          <fileset dir="${release.application.lib.dir}"/>
       </copy>
+      <copy todir="${release.applet.dir}/JNLP-INF">
+         <fileset dir="${res.dir}/jnlp"/>
+      </copy>
       <copy todir="${release.applet.dir}">
          <fileset dir="${lib.jars.dir}"/>
       </copy>
@@ -252,11 +260,13 @@
       <exec dir="${release.applet.dir}/jglobus2" os="Windows XP" executable="cmd.exe">
          <arg line="/C ${basedir}/${bin.dir}/signjars.bat ${keystore} ${keystore.alias} ${keystore.pass}"/>
       </exec>
-      <copy todir="${release.applet.dir}" overwrite="true">        
-          <fileset dir="${jglobus.lib.jars.dir}">
-  				<include name="jce-*.jar"/>
+     <!--  <copy todir="${release.applet.dir}" overwrite="true">        
+         <fileset dir="${jglobus.lib.jars.dir}">
+	 	</fileset> 
+	 	<fileset dir="${lib.jars.dir}">
+  				<include name="bcprov-*.jar"/>
 	 	</fileset>
-      </copy>
+      </copy>-->
       <echo>Done!</echo>
 	</target>
 
@@ -298,7 +308,7 @@
                 <fileset dir="${release.application.dir}" casesensitive="yes">
                     <include name="**/*.jar"/>
                     <include name="**/**/*.jar"/>
-                    <exclude name="**/*jce*"/>
+                    <exclude name="**/bcprov*"/>
                 </fileset>
             </path>
         </signjar>

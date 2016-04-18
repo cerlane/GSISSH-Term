@@ -3,6 +3,10 @@ Change log
 
 Note: Browser authentication currently works only with Mac OS-X Keychain Access.
 
+LRZ version 2.2.1, Siew Hoon, Cerlane, Leong (LRZ)
+- 04/04/2016 Modify the build.xml file to accommodate the new Java signing policies for JNLP applications. 
+- 18/04/2016 Update the default.properties file to use the new PRACE's winnetou server to download the CA certificates. 
+
 LRZ version 2.2.0 , Siew Hoon, Cerlane, Leong (LRZ)
 - 22/08/2014 Add support to End Entity Certificate required for LRZ SLCS
 - 25/03/2014 Add a feature to convert PEM certificates into PKCS12 format in Tools->Keygen
